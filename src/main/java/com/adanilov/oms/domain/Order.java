@@ -1,4 +1,4 @@
-package com.adanilov.exchange.domain;
+package com.adanilov.oms.domain;
 
 import java.util.UUID;
 

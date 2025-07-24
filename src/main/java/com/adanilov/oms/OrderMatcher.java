@@ -1,8 +1,8 @@
-package com.adanilov.exchange;
+package com.adanilov.oms;
 
-import com.adanilov.exchange.domain.Order;
-import com.adanilov.exchange.domain.Side;
-import com.adanilov.exchange.domain.Trade;
+import com.adanilov.oms.domain.Order;
+import com.adanilov.oms.domain.Side;
+import com.adanilov.oms.domain.Trade;
 
 import java.util.ArrayList;
 import java.util.List;
