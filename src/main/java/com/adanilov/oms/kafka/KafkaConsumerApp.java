@@ -10,12 +10,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.UUID;
 
 @Component
 public class KafkaConsumerApp {
@@ -30,14 +30,14 @@ public class KafkaConsumerApp {
 
 
     public void runConsumer() {
-        String topic = "test-topic-order12";
+        String topic = "topic-quote";
 
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer-group3123");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "ephemeral-" + UUID.randomUUID());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // Read from beginning
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); // read only new messages
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.adanilov.oms.domain");
 
         try (KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props)) {

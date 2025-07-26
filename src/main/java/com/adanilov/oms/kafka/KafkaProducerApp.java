@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class KafkaProducerApp {
     public static void main(String[] args) {
-        String topic = "test-topic-order12";
+        String topic = "topic-quote";
 
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
