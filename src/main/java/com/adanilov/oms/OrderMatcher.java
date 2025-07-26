@@ -3,11 +3,13 @@ package com.adanilov.oms;
 import com.adanilov.oms.domain.Order;
 import com.adanilov.oms.domain.Side;
 import com.adanilov.oms.domain.Trade;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+@Component
 public class OrderMatcher {
 
     PriorityQueue<Order> buyOrders = new PriorityQueue<>((a, b) -> b.price - a.price);
