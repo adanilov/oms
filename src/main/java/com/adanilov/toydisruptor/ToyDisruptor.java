@@ -1,6 +1,7 @@
 package com.adanilov.toydisruptor;
 
 public class ToyDisruptor<T> {
+    private final int mask;
     private Thread consumerThread;
     private final EventWrapper<T>[] buffer;
     private volatile boolean running = true;
@@ -12,6 +13,7 @@ public class ToyDisruptor<T> {
     @SuppressWarnings("unchecked")
     public ToyDisruptor(int bufferSize) {
         this.bufferSize = bufferSize;
+        this.mask = bufferSize - 1;
         this.buffer = new EventWrapper[bufferSize];
         for (int i = 0; i < bufferSize; i++) {
             buffer[i] = new EventWrapper<T>();
@@ -23,7 +25,7 @@ public class ToyDisruptor<T> {
             Thread.onSpinWait();
         }
 
-        EventWrapper<T> eventWrapper = buffer[(int) (writePos % bufferSize)];
+        EventWrapper<T> eventWrapper = buffer[(int) (writePos & mask)];
         eventWrapper.setValue(event);
         writePos++;
     }
@@ -45,7 +47,7 @@ public class ToyDisruptor<T> {
         consumerThread = new Thread(() -> {
             while (running || readPos < writePos) {
                 if (readPos < writePos) {
-                    EventWrapper<T> eventWrapper = buffer[(int) (readPos % bufferSize)];
+                    EventWrapper<T> eventWrapper = buffer[(int) (readPos & mask)];
                     handler.accept(eventWrapper.getValue());
                     eventWrapper.setValue(null);
                     readPos++;
