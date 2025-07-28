@@ -30,8 +30,8 @@ public class CompareRingBuffers {
         int bufferSize = 1024;
         List<String> result = new ArrayList<>();
 
-        Disruptor<MyEvent<String>> disruptor = new Disruptor<>(
-                MyEvent::new,
+        Disruptor<EventWrapper<String>> disruptor = new Disruptor<>(
+                EventWrapper::new,
                 bufferSize,
                 Executors.defaultThreadFactory(),
                 ProducerType.SINGLE,
@@ -41,19 +41,18 @@ public class CompareRingBuffers {
         disruptor.handleEventsWith((event, sequence, endOfBatch) -> result.add(event.getValue()));
         disruptor.start();
 
-        RingBuffer<MyEvent<String>> ringBuffer = disruptor.getRingBuffer();
+        RingBuffer<EventWrapper<String>> ringBuffer = disruptor.getRingBuffer();
         for (int i = 0; i < NUM; i++) {
             String value = "val" + i;
             long seq = ringBuffer.next();
             try {
-                MyEvent<String> event = ringBuffer.get(seq);
+                EventWrapper<String> event = ringBuffer.get(seq);
                 event.setValue(value);
             } finally {
                 ringBuffer.publish(seq);
             }
         }
 
-        // Wait a bit to let consumer process
         Thread.sleep(100);
         disruptor.shutdown();
         return result;
@@ -75,7 +74,6 @@ public class CompareRingBuffers {
             toy.publishEvent(value);
         }
 
-        // Wait a bit if needed
         Thread.sleep(100);
         toy.shutdown();
         return result;

@@ -2,17 +2,20 @@ package com.adanilov.toydisruptor;
 
 public class ToyDisruptor<T> {
     private Thread consumerThread;
-    private final T[] buffer;
+    private final EventWrapper<T>[] buffer;
     private volatile boolean running = true;
     private java.util.function.Consumer<T> handler;
     private final int bufferSize;
-    private volatile int writePos = 0;
-    private volatile int readPos = 0;
+    private volatile long writePos = 0;
+    private volatile long readPos = 0;
 
     @SuppressWarnings("unchecked")
     public ToyDisruptor(int bufferSize) {
         this.bufferSize = bufferSize;
-        this.buffer = (T[]) new Object[bufferSize];
+        this.buffer = new EventWrapper[bufferSize];
+        for (int i = 0; i < bufferSize; i++) {
+            buffer[i] = new EventWrapper<T>();
+        }
     }
 
     public void publishEvent(T event) {
@@ -20,7 +23,8 @@ public class ToyDisruptor<T> {
             Thread.onSpinWait();
         }
 
-        buffer[writePos % bufferSize] = event;
+        EventWrapper eventWrapper = buffer[(int) (writePos % bufferSize)];
+        eventWrapper.setValue(event);
         writePos++;
     }
 
@@ -41,9 +45,9 @@ public class ToyDisruptor<T> {
         consumerThread = new Thread(() -> {
             while (running || readPos < writePos) {
                 if (readPos < writePos) {
-                    T val = buffer[readPos % bufferSize];
-                    handler.accept(val);
-                    buffer[readPos % bufferSize] = null;
+                    EventWrapper<T> eventWrapper = buffer[(int) (readPos % bufferSize)];
+                    handler.accept(eventWrapper.getValue());
+                    eventWrapper.setValue(null);
                     readPos++;
                 } else {
                     Thread.onSpinWait();
