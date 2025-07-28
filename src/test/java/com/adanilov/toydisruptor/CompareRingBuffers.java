@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-public class TestRB {
+public class CompareRingBuffers {
 
     public static void main(String[] args) throws Exception {
         List<String> realResults = runRealDisruptorTest();
@@ -58,11 +58,19 @@ public class TestRB {
     }
 
     private static List<String> runToyDisruptorTest() throws Exception {
+        int bufferSize = 1024;
         List<String> result = new ArrayList<>();
 
-        ToyDisruptor<String> toy = new MyToyDisruptor<>(value -> result.add(value));
+        ToyDisruptor<String> toy = new ToyDisruptor<>(
+                bufferSize
+        );
+
+        toy.handleEventsWith(value -> result.add(value));
+        toy.start();
+
         for (int i = 0; i < 10; i++) {
-            toy.publishEvent("val" + i);
+            String value = "val" + i;
+            toy.publishEvent(value);
         }
 
         // Wait a bit if needed
