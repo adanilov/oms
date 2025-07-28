@@ -1,7 +1,7 @@
 package com.adanilov.toydisruptor;
 
 public class EventWrapper<T> {
-    private T value;
+    private volatile T value;
 
     public T getValue() {
         return value;
