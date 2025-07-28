@@ -11,6 +11,8 @@ import java.util.concurrent.Executors;
 
 public class CompareRingBuffers {
 
+    public static final int NUM = 20_000_000;
+
     public static void main(String[] args) throws Exception {
         List<String> realResults = runRealDisruptorTest();
         List<String> toyResults = runToyDisruptorTest();
@@ -40,7 +42,7 @@ public class CompareRingBuffers {
         disruptor.start();
 
         RingBuffer<MyEvent<String>> ringBuffer = disruptor.getRingBuffer();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < NUM; i++) {
             String value = "val" + i;
             long seq = ringBuffer.next();
             try {
@@ -68,7 +70,7 @@ public class CompareRingBuffers {
         toy.handleEventsWith(value -> result.add(value));
         toy.start();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < NUM; i++) {
             String value = "val" + i;
             toy.publishEvent(value);
         }

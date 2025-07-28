@@ -5,16 +5,22 @@ public class ToyDisruptor<T> {
     private final T[] buffer;
     private volatile boolean running = true;
     private java.util.function.Consumer<T> handler;
+    private final int bufferSize;
     private volatile int writePos = 0;
     private volatile int readPos = 0;
 
     @SuppressWarnings("unchecked")
-    public ToyDisruptor(int size) {
-        this.buffer = (T[]) new Object[size];
+    public ToyDisruptor(int bufferSize) {
+        this.bufferSize = bufferSize;
+        this.buffer = (T[]) new Object[bufferSize];
     }
 
     public void publishEvent(T event) {
-        buffer[writePos % buffer.length] = event;
+        while (writePos - readPos >= bufferSize) {
+            Thread.onSpinWait();
+        }
+
+        buffer[writePos % bufferSize] = event;
         writePos++;
     }
 
@@ -33,11 +39,14 @@ public class ToyDisruptor<T> {
 
     public void start() {
         consumerThread = new Thread(() -> {
-            while (running || readPos != writePos) {
-                if (readPos != writePos) {
-                    T val = buffer[readPos % buffer.length];
+            while (running || readPos < writePos) {
+                if (readPos < writePos) {
+                    T val = buffer[readPos % bufferSize];
                     handler.accept(val);
+                    buffer[readPos % bufferSize] = null;
                     readPos++;
+                } else {
+                    Thread.onSpinWait();
                 }
             }
         });
