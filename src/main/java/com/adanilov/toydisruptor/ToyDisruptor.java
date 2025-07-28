@@ -23,7 +23,7 @@ public class ToyDisruptor<T> {
             Thread.onSpinWait();
         }
 
-        EventWrapper eventWrapper = buffer[(int) (writePos % bufferSize)];
+        EventWrapper<T> eventWrapper = buffer[(int) (writePos % bufferSize)];
         eventWrapper.setValue(event);
         writePos++;
     }
