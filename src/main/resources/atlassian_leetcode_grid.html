@@ -4,393 +4,172 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Atlassian Coding Prep Grid</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: monospace;
-      background: #f5f5f5;
-      overflow: hidden;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(5, 1fr);
-      gap: 4px;
-      height: 100vh;
-      width: 100vw;
-      padding: 4px;
-      box-sizing: border-box;
-    }
-    .cell {
-      background: white;
-      border: 1px solid #ccc;
-      overflow: auto;
-      padding: 8px;
-      font-size: 12px;
-      white-space: pre;
-    }
-    code {
-      font-family: monospace;
-    }
-    strong {
-      color: #d63384;
-      font-weight: bold;
-    }
+
+      /* Override Prism background and text color */
+      pre[class*="language-"],
+      code[class*="language-"] {
+        background: #ffffff !important;
+        color: #000000;
+        margin: 0 !important;         /* Remove default outer margin */
+        padding: 0px !important;      /* Optional: smaller inner spacing */
+        box-shadow: none !important;  /* Optional: remove box shadow */
+        border: none !important;      /* Optional: remove border */
+      }
+
+
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: monospace;
+            background: #f5f5f5;
+            overflow: hidden;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 4px;
+            height: 100vh;
+            width: 100vw;
+            padding: 4px;
+            box-sizing: border-box;
+          }
+          .cell {
+            background: white;
+            border: 1px solid #ccc;
+            overflow: auto;
+            padding: 8px;
+            font-size: 12px;
+            white-space: pre;
+          }
+          code {
+            font-family: monospace;
+          }
+          strong {
+            color: #d63384;
+            font-weight: bold;
+          }
   </style>
 </head>
 <body>
   <div class="grid">
-    <div class="cell"><code>public int maxProfit(int[] prices) {
+    <div class="cell"><pre><code class="language-java">public int[] findColumnWidth(int[][] grid) {
+    /* Approach:
+        for each column, find the longest number and put in result
+    */
+    int rows = grid.length;
+    int cols = grid[0].length;
+                            
+    int[] res = new int[cols];
+    for (int c = 0; c < cols; c++) {
+        int len = 1;
+        for (int r=0; r&lt;rows; r++) {
+            len = Math.max(len, len(grid[r][c]));
+        }
+        res[c] = len;
+    }
+    return res;
+}
 
+int len(int num) {
+    int res = 0;
+    if (num<0) {
+        res++;
+    }
+    while(num!=0){
+        res++;
+        num /= 10;
+    }
+    return res;
+}
+</code></pre></div>
+<div class="cell"><pre><code class="language-java">public String rankTeams(String[] votes) {
+/*
+    1)create TEAM:SortedListOfRanks objects
+    A:11111
+    B:22233
+    C:22333
+    2)We need a comparator comparing two sorted lists of Integers
+    3)when sorted, return TEAMs
+*/
+Map&lt;Character, List&lt;Integer>> votesByTeam = new HashMap&lt;>();
+for (String v : votes) {
+    for (int rank = 0; rank < v.length(); rank++) {
+        char team = v.charAt(rank);
+        votesByTeam.putIfAbsent(team, new ArrayList<>());
+        votesByTeam.get(team).add(rank);
+    }
+}
+                        
+class TeamAndVotes implements Comparable&lt;TeamAndVotes> {
+    List&lt;Integer> votes;
+    Character team;
+    public int compareTo(TeamAndVotes that) {
+        int i = 0;
+        while(i&lt;this.votes.size() && i < that.votes.size()) {
+            if(this.votes.get(i) < that.votes.get(i)){
+                return -1;
+            } else if(this.votes.get(i) > that.votes.get(i)){
+                return 1;
+            } else {
+                i++;
+            }
+        }
+        return this.team.compareTo(that.team);
+    }
+}
+List&lt;TeamAndVotes> list = new ArrayList<>();
+for (var entry: votesByTeam.entrySet()) {
+    Collections.sort(entry.getValue());
+    TeamAndVotes tav = new TeamAndVotes();
+    tav.team = entry.getKey();
+    tav.votes = entry.getValue();
+    list.add(tav);
+}
+
+Collections.sort(list);
+StringBuilder res = new StringBuilder();
+for (var tav:list) {
+    res.append(tav.team);
+}
+return res.toString();
+}
+</code></pre></div>
+<div class="cell"><pre><code class="language-java">public boolean canPlaceFlowers(int[] flowerbed, int n) {
+    int[] arr = flowerbed;
+    int count = 0;
+    for(int i=0; i < arr.length && count < n; i++) {
+        if(arr[i]==0) {
+            boolean leftIs0 = i>=1 ? arr[i-1] == 0 : true;
+            boolean rightIs0 = i < arr.length - 1 ? arr[i+1] == 0 : true;
+            if (leftIs0 && rightIs0) {
+                arr[i] = 1;
+                count++;
+            }
+        }
+    }
+    return count >= n;
+}
+</code></pre></div>
+<div class="cell"><pre><code class="language-java">public int maxProfit(int[] prices) {
+                                                   
     int maxProfit = 0;
     int minPrice = Integer.MAX_VALUE;
-
+                                                   
     for (int price : prices) {
         int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
+        if(profit > maxProfit)
             maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
+        if(price < minPrice)
             minPrice = price;
     }
     return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
-<div class="cell"><code>public int maxProfit(int[] prices) {
-
-    int maxProfit = 0;
-    int minPrice = Integer.MAX_VALUE;
-
-    for (int price : prices) {
-        int profit = price - minPrice;
-        <strong>if(profit > maxProfit)</strong>
-            maxProfit = profit;
-        <strong>if(price < minPrice)</strong>
-            minPrice = price;
-    }
-    return maxProfit;
-}</code></div>
+}
+</code></pre></div>
   </div>
 </body>
 </html>
