@@ -31,7 +31,7 @@
           .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
             gap: 4px;
             height: 100vh;
             width: 100vw;
@@ -170,6 +170,200 @@ return res.toString();
     return maxProfit;
 }
 </code></pre></div>
+<div class="cell"><pre><code class="language-java">
+public int minEatingSpeed(int[] piles, int h) {
+    int maxInPile = -1;
+    for (int pile : piles) {
+        maxInPile = Math.max(maxInPile, pile);
+    }
+    int l = 1;
+    int r = maxInPile;
+    int ans = maxInPi
+    while (l <= r) {
+        int mid = (l+r) / 2;
+        if (canEat(piles, h, mid)) {
+            ans = Math.min(ans, mid);
+            r = mid - 1;
+        } else {
+            l = mid + 1;
+        }
+    }
+    return ans;
+}
+
+boolean canEat(int[] piles, int h, int speed) {
+    int time = 0;
+    for (int pile : piles) {
+        time += Math.ceil((double)pile / speed);
+    }
+    return time <=h;
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+def minMeetingRooms(self, intervals: List[List[int]]) -> int:
+    delta = []
+    for a,b in intervals:
+        delta.append((a, 1))
+        delta.append((b, -1))
+    delta.sort()
+    cur = 0
+    res = 0
+    for k,v in delta:
+        cur += v
+        res = max(res, cur)
+    return res
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+    ''' Approach:
+    sort by start
+    cur, next
+    1 if next.start > cur.end put cur to result
+    -----
+            -------
+    2 next.start <=cur.end:
+    ---------------
+       ------
+    cur.end = max(cur.end, next.end)
+    '''
+    intervals.sort(key = lambda x : (x[0], x[1]))
+    cur = intervals[0]
+    res = []
+    for i in range(1, len(intervals)):
+        next = intervals[i]
+        if next[0] > cur[1]:
+            res.append(cur.copy())
+            cur = next
+        elif next[0] <= cur[1]:
+            cur[1] = max(cur[1], next[1])
+    if cur:
+        res.append(cur.copy())
+    return res
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+public int[] searchRange(int[] nums, int target) {
+    int l=0;
+    int r=nums.length-1;
+
+    /* Tar=3
+    11223356
+       m
+
+    last position!
+    tar==m:
+    search in the RIGHT
+    tar>m:
+    search in the RIGHT
+
+    */
+    int first = -1;
+    while(l<=r) {
+        int m=(l+r)/2;
+        if(nums[m]==target){
+            first = m;
+        }
+        if(nums[m]>=target){
+            r=m-1;
+        }else{
+            l=m+1;
+        }
+    }
+
+    l = 0;
+    r = nums.length-1;
+    int last = -1;
+
+    while(l<=r) {
+        int m=(l+r)/2;
+        if(nums[m]==target){
+            last = m;
+        }
+        if(nums[m]<=target){
+            l=m+1;
+
+        }else{
+            r=m-1;
+        }
+    }
+    return new int[]{first,last};
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+class Node:
+    def __init__(self, key, val):
+        self.key = key
+        self.val = val
+        self.prev, self.next = None, None
+
+class LRUCache:
+
+    def __init__(self, capacity: int):
+        self.cap = capacity
+        self.left = Node(0, 0)
+        self.right = Node(0, 0)
+        self.left.next = self.right
+        self.right.prev = self.left
+        self.cache = {}
+
+    def remove(self, node):
+        prev = node.prev
+        next = node.next
+        prev.next = next
+        next.prev = prev
+
+    def add(self, node):
+        prev = self.right.prev
+        prev.next = node
+        self.right.prev = node
+        node.next = self.right
+        node.prev = prev
+
+
+    def get(self, key: int) -> int:
+        if key in self.cache:
+            node = self.cache[key]
+            self.remove(node)
+            self.add(node)
+            return node.val
+        else:
+            return -1
+
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.remove(self.cache[key])
+        node = Node(key, value)
+        self.cache[key] = node
+        self.add(node)
+
+        if len(self.cache) > self.cap:
+            lru = self.left.next
+            self.remove(lru)
+            del self.cache[lru.key]
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+def topKFrequent(self, nums: List[int], k: int) -> List[int]:
+    ''' Approach
+    1)count (now we have a freq map) 1=>3 2=>2 3=>1
+    2)feed the items into a MIN heap of size K. Min count is to be expelled when exceeding K
+    3)return keys() '''
+    count = Counter(nums)
+    minHeap = []
+    for num, cnt in count.items():
+        heapq.heappush(minHeap, (cnt, num))
+        if len(minHeap) > k:
+            heapq.heappop(minHeap)
+    res = []
+    while minHeap:
+        res.append(heapq.heappop(minHeap)[1])
+    return res
+</code></pre></div>
+
   </div>
 </body>
 </html>
