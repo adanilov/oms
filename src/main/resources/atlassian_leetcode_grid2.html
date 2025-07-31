@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlassian Coding Prep Grid</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <style>
+
+        /* Override Prism background and text color */
+        pre[class*="language-"],
+        code[class*="language-"] {
+          background: #ffffff !important;
+          color: #000000;
+          margin: 0 !important;         /* Remove default outer margin */
+          padding: 0px !important;      /* Optional: smaller inner spacing */
+          box-shadow: none !important;  /* Optional: remove box shadow */
+          border: none !important;      /* Optional: remove border */
+        }
+
+
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: monospace;
+              background: #f5f5f5;
+              overflow: hidden;
+            }
+            .grid {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              grid-template-rows: repeat(3, 1fr);
+              gap: 4px;
+              height: 100vh;
+              width: 100vw;
+              padding: 4px;
+              box-sizing: border-box;
+            }
+            .cell {
+              background: white;
+              border: 1px solid #ccc;
+              overflow: auto;
+              padding: 8px;
+              font-size: 12px;
+              white-space: pre;
+            }
+            code {
+              font-family: monospace;
+            }
+            strong {
+              color: #d63384;
+              font-weight: bold;
+            }
+    </style>
+</head>
+<body>
+<div class="grid">
+
+<div class="cell"><pre><code class="language-java">
+class StockPrice {
+
+    Map&lt;Integer, Integer>  priceByTs = new ConcurrentHashMap<>();
+    TreeMap&lt;Integer, Integer> freqByPrice = new TreeMap<>();
+    int maxTs = -1;
+
+    public void update(int timestamp, int price) {
+        maxTs = Math.max(maxTs, timestamp);
+
+        Integer oldPrice = priceByTs.get(timestamp);
+        if(oldPrice != null) {
+            Integer freq = freqByPrice.get(oldPrice);
+            if (freq == 1) {
+                freqByPrice.remove(oldPrice);
+            } else {
+                freqByPrice.put(oldPrice, freq - 1);
+            }
+        }
+
+        priceByTs.put(timestamp, price);
+
+        Integer freq = freqByPrice.get(price);
+        if (freq == null) {
+            freqByPrice.put(price, 1);
+        } else {
+            freqByPrice.put(price, freq + 1);
+        }
+    }
+
+    public int current() {
+        return priceByTs.get(maxTs);
+    }
+
+    public int maximum() {
+        return freqByPrice.lastKey();
+    }
+
+    public int minimum() {
+        return freqByPrice.firstKey();
+    }
+  }
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+class Solution {
+    public List&lt;String> findHighAccessEmployees(List&lt;List&lt;String>> access_times) {
+        /*
+            get for 1 employee
+            sort
+            find out
+        */
+        Map&lt;String, List&ltString>> timesByEmployee = new HashMap<>();
+        for(List&ltString> rec : access_times) {
+            String empl = rec.get(0);
+            String time = rec.get(1);
+            timesByEmployee.putIfAbsent(empl, new ArrayList<>());
+            timesByEmployee.get(empl).add(time);
+        }
+
+        List&ltString> res = new ArrayList<>();
+
+        for(var entry:timesByEmployee.entrySet()) {
+            List&ltString> times = entry.getValue();
+            Collections.sort(times);
+            for(int i=1; i&lt;times.size()-1;i++){
+                if( diff(times.get(i-1), times.get(i)) + diff(times.get(i), times.get(i+1)) <60 ) {
+                    res.add(entry.getKey());
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+    int diff(String a, String b) {
+        int hoursA = Integer.valueOf(a.substring(0,2));
+        int hoursB = Integer.valueOf(b.substring(0,2));
+
+        int minsA = Integer.valueOf(a.substring(2));
+        int minsB = Integer.valueOf(b.substring(2));
+        int res = (hoursB - hoursA)*60;
+        if (minsB&lt;minsA){
+            minsB += 60;
+            res -= 60;
+        }
+        res += minsB - minsA;
+        //System.out.println("between "+a+" and "+b+" " +res + " mins");
+        return res;
+    }
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+        self.parent = None
+"""
+
+class Solution:
+    def lowestCommonAncestor(self, p: 'Node', q: 'Node') -> 'Node':
+        a, b = p, q
+        while True:
+            a = a.parent if a else q
+            b = b.parent if b else p
+            if a == b:
+                return a
+
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+class Solution:
+    def exist(self, board: List[List[str]], word: str) -> bool:
+        ''' Approach:
+        for each cell, if it is 1st letter ot the word:
+            dfs
+                pass: next letter to look for
+                    set of visited
+                    dfs returns what? True/False
+        '''
+        ROWS, COLS = len(board), len(board[0])
+
+        def dfs(r,c, i, visited):
+            if i == len(word):
+                return True
+
+            if r < 0 or r >= ROWS or c < 0 or c >= COLS or (r,c) in visited or word[i] != board[r][c]:
+                return False
+
+            visited.add((r,c))
+            if (dfs(r+1,c,i+1,visited)
+                or dfs(r-1,c,i+1,visited)
+                or dfs(r,c+1, i+1, visited)
+                or dfs(r,c-1, i+1, visited)):
+                return True
+            visited.remove((r,c))
+
+        for r in range(ROWS):
+            for c in range(COLS):
+                if board[r][c] == word[0]:
+                    if dfs(r, c, 0, set()):
+                        return True
+        return False
+</code></pre></div>
+
+
+<div class="cell"><pre><code class="language-java">
+class Solution {
+    int ROWS, COLS;
+    int[][] matrix;
+
+    boolean dfs(int r, int c, int[][] visited) {//true = > canCross
+        if (r<0 || r >= ROWS || c<0 || c >= COLS) {
+            return false;
+        }
+
+        if(visited[r][c]==1) {
+            return false;
+        }
+        if(matrix[r][c]==1) {
+            return false;
+        }
+        visited[r][c] = 1;
+        if(r == ROWS - 1) {
+            return true;
+        }
+        if(dfs(r-1,c,visited)
+            || dfs(r+1,c,visited)
+            || dfs(r,c-1,visited)
+            || dfs(r,c+1,visited)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    public int latestDayToCross(int row, int col, int[][] cells) {
+        this.ROWS = row;
+        this.COLS = col;
+        int l = 0;
+        int r = cells.length - 1;
+        int res = 0;
+        while(l <= r) {
+            int day = (l+r) / 2;
+            int[][] curMatrix = new int[ROWS][COLS];
+            for (int i=0; i < day; i++) {
+                int[] water = cells[i];
+                curMatrix[water[0]-1][water[1]-1] = 1;
+            }
+            this.matrix = curMatrix;
+            boolean canCross = false;
+
+            for(int c=0;c < COLS;c++){
+                canCross = dfs(0, c, new int[ROWS][COLS]);
+
+                if(canCross) {
+                    break;
+                }
+            }
+            if(canCross) {
+                res = Math.max(res, day);
+                l = day + 1;
+            } else {
+                r = day - 1;
+            }
+        }
+        return res;
+    }
+
+}
+</code></pre></div>
+
+</div>
+</body>
+</html>

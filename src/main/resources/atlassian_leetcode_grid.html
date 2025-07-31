@@ -322,7 +322,6 @@ class LRUCache:
         node.next = self.right
         node.prev = prev
 
-
     def get(self, key: int) -> int:
         if key in self.cache:
             node = self.cache[key]
@@ -331,7 +330,6 @@ class LRUCache:
             return node.val
         else:
             return -1
-
 
     def put(self, key: int, value: int) -> None:
         if key in self.cache:
@@ -362,6 +360,131 @@ def topKFrequent(self, nums: List[int], k: int) -> List[int]:
     while minHeap:
         res.append(heapq.heappop(minHeap)[1])
     return res
+</code></pre></div>
+
+
+
+<div class="cell"><pre><code class="language-java">
+class AllOne {
+
+    TreeMap&lt;Integer, Set&lt;String>> strByFreq = new TreeMap<>();
+    Map&lt;String, Integer> freqByStr = new HashMap<>();
+
+    public void dec(String key) {
+        int freq = freqByStr.get(key);
+        freqByStr.put(key, freq - 1);
+        if(freq==1) {
+            freqByStr.remove(key);
+        }
+        strByFreq.get(freq).remove(key);
+        if(strByFreq.get(freq).size() == 0) {
+            strByFreq.remove(freq);
+        }
+        if(freq>1){
+            strByFreq.putIfAbsent(freq-1, new HashSet<>());
+            strByFreq.get(freq-1).add(key);
+        }
+    }
+
+    public void inc(String key) {
+        Integer freq = freqByStr.get(key);
+        if(freq == null) {
+            freqByStr.put(key, 1);
+            strByFreq.putIfAbsent(1, new HashSet<>());
+            strByFreq.get(1).add(key);
+        } else {
+            freqByStr.put(key, freq+1);
+            //decrease old freq, increase new
+            strByFreq.get(freq).remove(key);
+            if (strByFreq.get(freq).size()==0) {
+                strByFreq.remove(freq);
+            }
+            strByFreq.putIfAbsent(freq+1, new HashSet<>());
+            strByFreq.get(freq+1).add(key);
+        }
+    }
+
+    public String getMaxKey() {
+        if(freqByStr.size()==0){
+            return "";
+        }
+        return strByFreq.get(strByFreq.lastKey()).stream().findFirst().get();
+    }
+
+    public String getMinKey() {
+        if(freqByStr.size()==0){
+            return "";
+        }
+        return strByFreq.get(strByFreq.firstKey()).stream().findFirst().get();
+    }
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+public List&lt;String> fullJustify(String[] words, int maxWidth) {
+    List&lt;List&lt;String>> lines = breakdown(words, maxWidth);
+
+    List&lt;String> res = new ArrayList<>();
+
+    for(int i=0; i < lines.size() - 1; i++){
+        List&lt;String> line = lines.get(i);
+        res.add( createLine(line, maxWidth, false) );
+    }
+    res.add( createLine(lines.get(lines.size()-1), maxWidth, true) );
+
+    return res;
+}
+
+String createLine(
+    List&lt;String> line,
+    int maxWidth,
+    boolean isLast
+) {
+    ///////////////////////////  DONE  ///////////////////////////
+    int baseLength = -1;
+    for (String w : line) {
+        baseLength += 1 + w.length();
+    }
+    int extraSpaces = maxWidth - baseLength;
+    if (isLast || line.size()==1) {
+        return String.join(" ", line) + " ".repeat(extraSpaces);
+    }
+    ///////////////////////////////////////////////////////
+    int wordCount = line.size() - 1;
+    // int spaceCount = maxWidth - wordCount;
+    int spacesPerWord = extraSpaces / wordCount;
+    int extraSpacesNeeded = extraSpaces % wordCount;
+
+    for (int i=0; i< extraSpacesNeeded; i++) {
+        line.set(i, line.get(i)+" ");
+    }
+
+    for (int i=0; i< wordCount; i++) {
+        line.set(i, line.get(i)+" ".repeat(spacesPerWord));
+    }
+    return String.join(" ", line);
+}
+
+List&lt;List&lt;String>> breakdown(String[] words, int width) {
+    List&lt;List&lt;String>> res = new ArrayList<>();
+    List&lt;String> curLine = new ArrayList<>();
+    int curChars = 0;
+    for (String w : words) {
+        int charsIfAdding = curChars + curLine.size() + w.length();
+
+        if (charsIfAdding > width) {
+            res.add(curLine);
+            curLine = new ArrayList<>();
+            curChars = 0;
+        }
+        curChars += w.length();
+        curLine.add(w);
+    }
+    if(curLine.size()>0){
+        res.add(curLine);
+    }
+    return res;
+}
 </code></pre></div>
 
   </div>
