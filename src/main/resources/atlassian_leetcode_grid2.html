@@ -151,28 +151,6 @@ class Solution {
 </code></pre></div>
 
 <div class="cell"><pre><code class="language-java">
-"""
-# Definition for a Node.
-class Node:
-    def __init__(self, val):
-        self.val = val
-        self.left = None
-        self.right = None
-        self.parent = None
-"""
-
-class Solution:
-    def lowestCommonAncestor(self, p: 'Node', q: 'Node') -> 'Node':
-        a, b = p, q
-        while True:
-            a = a.parent if a else q
-            b = b.parent if b else p
-            if a == b:
-                return a
-
-</code></pre></div>
-
-<div class="cell"><pre><code class="language-java">
 class Solution:
     def exist(self, board: List[List[str]], word: str) -> bool:
         ''' Approach:
@@ -271,6 +249,66 @@ class Solution {
         return res;
     }
 
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+public Node lowestCommonAncestor(Node p, Node q) {
+    /*
+        get distance for both
+        advance the lower one by the diff (so they're both at one level)
+        advance node=node.parent until they point to the same node
+    */
+    Node pCopy = p;
+    Node qCopy = q;
+
+    int pLen = 0;
+    while (p!=null) {
+        p = p.parent;
+        pLen++;
+    }
+
+    int qLen = 0;
+    while (q!=null) {
+        q = q.parent;
+        qLen++;
+    }
+
+    p = pCopy;
+    q = qCopy;
+    while (pLen>qLen) {
+        p = p.parent;
+        pLen--;
+    }
+    while (qLen>pLen){
+        q = q.parent;
+        qLen--;
+    }
+
+    while(p!=q){
+        p = p.parent;
+        q = q.parent;
+    }
+    return p;
+
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+Map&lt;String, Integer> tsByMessage = new HashMap<>();
+
+public boolean shouldPrintMessage(int timestamp, String message) {
+    Integer lastTs = tsByMessage.get(message);
+    if(lastTs==null){
+        tsByMessage.put(message, timestamp);
+        return true;
+    }
+    if(timestamp - lastTs >= 10) {
+        tsByMessage.put(message, timestamp);
+        return true;
+    } else {
+        return false;
+    }
 }
 </code></pre></div>
 
