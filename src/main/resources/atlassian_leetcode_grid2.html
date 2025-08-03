@@ -329,6 +329,104 @@ public int numPairsDivisibleBy60(int[] time) {
 }
 </code></pre></div>
 
+<div class="cell"><pre><code class="language-java">
+SELECT
+  IF(COUNT(DISTINCT salary) >= N,
+     (SELECT MIN(salary)
+      FROM (
+        SELECT DISTINCT salary
+        FROM employee
+        ORDER BY salary DESC
+        LIMIT N
+      ) AS topN),
+     NULL) AS NthHighestSalary
+FROM employee
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+class FoodRatings {
+
+    /*
+    in cuisine, we need a sorted collection (by rating dec, then by name inc)
+    Heap: miso, 1; sushi, 1; sorted.
+    map: cuisine by food. We need it to locate the right heap.
+    */
+    static class FoodAndRating implements Comparable&lt;FoodAndRating> {
+        String food;
+        int rating;
+        public FoodAndRating(String food, int rating) {this.food = food; this.rating = rating;}
+        public int compareTo(FoodAndRating that) {
+            if (this.rating == that.rating){
+                return this.food.compareTo(that.food);
+            } else {
+                return new Integer(that.rating).compareTo(this.rating);
+            }
+        }
+    }
+
+    Map&lt;String, String> cuisineByFood = new HashMap<>();
+    Map&lt;String, PriorityQueue&lt;FoodAndRating>> ratingsByCuisine = new HashMap<>();
+    Map&lt;String, Integer> ratingByFood = new HashMap<>();
+
+    public FoodRatings(String[] foods, String[] cuisines, int[] ratings) {
+        for(int i=0;i < foods.length;i++){
+            String food = foods[i];
+            String cuisine = cuisines[i];
+            int rating = ratings[i];
+            var far = new FoodAndRating(food, rating);
+            cuisineByFood.put(food, cuisine);
+            ratingsByCuisine.putIfAbsent(cuisine, new PriorityQueue<>());
+            ratingsByCuisine.get(cuisine).add(far);
+            ratingByFood.put(food, rating);
+        }
+    }
+
+    public void changeRating(String food, int newRating) {
+        var heap = ratingsByCuisine.get(cuisineByFood.get(food));
+        heap.add(new FoodAndRating(food, newRating));
+        ratingByFood.put(food,newRating);
+    }
+
+    public String highestRated(String cuisine) {
+        var heap = ratingsByCuisine.get(cuisine);
+        while(true) {
+            FoodAndRating far = heap.peek();
+            if (far.rating != ratingByFood.get(far.food)) {
+                heap.poll();
+            } else {
+                break;
+            }
+        }
+        return heap.peek().food;
+    }
+}
+</code></pre></div>
+
+<div class="cell"><pre><code class="language-java">
+public int[] vowelStrings(String[] words, int[][] queries) {
+    /*
+        int[] prefix - each element is the number of strings before i including i starting and ending with vowel
+        1 1 2
+        return the diff
+    */
+    Set<Character> vowels = Set.of('a','o', 'u', 'i', 'e');
+    int[] pref = new int[words.length];
+    int vowelWordsSoFar = 0;
+    for(int i=0; i< words.length; i++) {
+        String w = words[i];
+        if (vowels.contains(w.charAt(0)) && vowels.contains(w.charAt(w.length()-1)) ) {
+            vowelWordsSoFar++;
+        }
+        pref[i] = vowelWordsSoFar;
+    }
+    int[] res = new int[queries.length];
+    for (int i = 0; i < queries.length; i++) {
+        int[] q = queries[i];
+        res[i] = q[0] == 0 ? pref[q[1]] : pref[q[1]] - pref[q[0]-1];
+    }
+    return res;
+}
+</code></pre></div>
 </div>
 </body>
 </html>
