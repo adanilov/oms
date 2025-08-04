@@ -126,8 +126,7 @@ return res.toString();
 }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-public int minEatingSpeed(int[] piles, int h) {
+<div class="cell"><pre><code class="language-java">public int minEatingSpeed(int[] piles, int h) {
     int maxInPile = -1;
     for (int pile : piles) {
         maxInPile = Math.max(maxInPile, pile);
@@ -156,103 +155,125 @@ boolean canEat(int[] piles, int h, int speed) {
 }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-def minMeetingRooms(self, intervals: List[List[int]]) -> int:
-    delta = []
-    for a,b in intervals:
-        delta.append((a, 1))
-        delta.append((b, -1))
-    delta.sort()
-    cur = 0
-    res = 0
-    for k,v in delta:
-        cur += v
-        res = max(res, cur)
-    return res
+<div class="cell"><pre><code class="language-java">public int minMeetingRooms(int[][] intervals) {
+    Map&lt;Integer, Integer> deltas = new TreeMap<>();
+    for(int[] interval : intervals){
+        int start = interval[0];
+        int end = interval[1];
+        deltas.put(start, deltas.getOrDefault(start,0) + 1);
+        deltas.put(end, deltas.getOrDefault(end, 0) -1);
+    }
+
+    int cur = 0;
+    int max = 0;
+    for(int time : deltas.keySet()){
+        cur += deltas.get(time);
+        max = Math.max(max, cur);
+    }
+    return max;
+}
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-def merge(self, intervals: List[List[int]]) -> List[List[int]]:
-    ''' Approach:
-    sort by start
-    cur, next
-    1 if next.start > cur.end put cur to result
-    -----
-            -------
-    2 next.start <=cur.end:
-    ---------------
-       ------
-    cur.end = max(cur.end, next.end)
-    '''
-    intervals.sort(key = lambda x : (x[0], x[1]))
-    cur = intervals[0]
-    res = []
-    for i in range(1, len(intervals)):
-        next = intervals[i]
-        if next[0] > cur[1]:
-            res.append(cur.copy())
-            cur = next
-        elif next[0] <= cur[1]:
-            cur[1] = max(cur[1], next[1])
-    if cur:
-        res.append(cur.copy())
-    return res
+<div class="cell"><pre><code class="language-java">public int[][] merge(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+
+    int[] cur = intervals[0];
+
+    List&lt;int[]> res = new ArrayList<>();
+
+    for(int i=1; i< intervals.length; i++) {
+        int[] next = intervals[i];
+
+        if(next[0]<=cur[1]){
+            cur[1] = Math.max(cur[1], next[1]);
+        } else {
+            res.add(cur);
+            cur = next;
+        }
+    }
+    res.add(cur);
+    int[][] retVal = new int[res.size()][2];
+    for(int i=0; i < res.size(); i++) {
+        retVal[i] = res.get(i);
+    }
+    return retVal;
+}
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-class Node:
-    def __init__(self, key, val):
-        self.key = key
-        self.val = val
-        self.prev, self.next = None, None
+<div class="cell"><pre><code class="language-java">class LRUCache {
 
-class LRUCache:
+    static class Node {
+        int key;
+        int value;
+        Node next;
+        Node prev;
+    }
 
-    def __init__(self, capacity: int):
-        self.cap = capacity
-        self.left = Node(0, 0)
-        self.right = Node(0, 0)
-        self.left.next = self.right
-        self.right.prev = self.left
-        self.cache = {}
+    Node left;
+    Node right;
+    Map&lt;Integer, Node> cache = new HashMap<>();
+    int capacity;
 
-    def remove(self, node):
-        prev = node.prev
-        next = node.next
-        prev.next = next
-        next.prev = prev
+    public LRUCache(int capacity) {
+        left = new Node();
+        right = new Node();
+        left.next = right;
+        right.prev = left;
+        this.capacity = capacity;
+    }
 
-    def add(self, node):
-        prev = self.right.prev
-        prev.next = node
-        self.right.prev = node
-        node.next = self.right
-        node.prev = prev
+    void remove(int key) {
+        if(!cache.containsKey(key)) {
+            return;
+        }
+        Node toRemove = cache.get(key);
+        Node l = toRemove.prev;
+        Node r = toRemove.next;
+        l.next = r;
+        r.prev = l;
+        cache.remove(key);
+    }
 
-    def get(self, key: int) -> int:
-        if key in self.cache:
-            node = self.cache[key]
-            self.remove(node)
-            self.add(node)
-            return node.val
-        else:
-            return -1
+    void add(int key, int value) {
+        Node toInsert = new Node();
+        toInsert.value = value;
+        toInsert.key = key;
 
-    def put(self, key: int, value: int) -> None:
-        if key in self.cache:
-            self.remove(self.cache[key])
-        node = Node(key, value)
-        self.cache[key] = node
-        self.add(node)
+        cache.put(key, toInsert);
 
-        if len(self.cache) > self.cap:
-            lru = self.left.next
-            self.remove(lru)
-            del self.cache[lru.key]
+        Node l = right.prev;
+        Node r = right;
+
+        l.next = toInsert;
+        r.prev = toInsert;
+
+        toInsert.prev = l;
+        toInsert.next = r;
+    }
+
+    public int get(int key) {
+        Node node = cache.get(key);
+        if(node == null) {
+            return -1;
+        }
+
+        remove(key);
+        add(key, node.value);
+        return node.value;
+    }
+
+    public void put(int key, int value) {
+        remove(key);
+        add(key, value);
+        if (cache.size() > capacity) {
+            Node lru = left.next;
+            remove(lru.key);
+        }
+    }
+}
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-class AllOne {
+<div class="cell"><pre><code class="language-java">class AllOne {
 
     TreeMap&ltInteger, Set&ltString>> strByFreq = new TreeMap<>();
     Map&ltString, Integer> freqByStr = new HashMap<>();
@@ -307,8 +328,7 @@ class AllOne {
 }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-public List&ltString> fullJustify(String[] words, int maxWidth) {
+<div class="cell"><pre><code class="language-java">public List&ltString> fullJustify(String[] words, int maxWidth) {
     List&ltList&ltString>> lines = breakdown(words, maxWidth);
 
     List&ltString> res = new ArrayList<>();
@@ -374,8 +394,7 @@ List&ltList&ltString>> breakdown(String[] words, int width) {
 }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-class StockPrice {
+<div class="cell"><pre><code class="language-java">class StockPrice {
 
     Map&ltInteger, Integer>  priceByTs = new ConcurrentHashMap<>();
     TreeMap&ltInteger, Integer> freqByPrice = new TreeMap<>();
@@ -418,8 +437,7 @@ class StockPrice {
   }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-class Solution {
+<div class="cell"><pre><code class="language-java">class Solution {
     public List&ltString> findHighAccessEmployees(List&ltList&ltString>> access_times) {
         /*
             get for 1 employee
@@ -466,8 +484,7 @@ class Solution {
 }
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-class Solution:
+<div class="cell"><pre><code class="language-java">class Solution:
     def exist(self, board: List[List[str]], word: str) -> bool:
         ''' Approach:
         for each cell, if it is 1st letter ot the word:
@@ -501,8 +518,7 @@ class Solution:
         return False
 </code></pre></div>
 
-<div class="cell"><pre><code class="language-java">
-public Node lowestCommonAncestor(Node p, Node q) {
+<div class="cell"><pre><code class="language-java">public Node lowestCommonAncestor(Node p, Node q) {
     /*
         get distance for both
         advance the lower one by the diff (so they're both at one level)
